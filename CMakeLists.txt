@@ -27,7 +27,7 @@ endif()
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo MinSizeRel)
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
-add_subdirectory(htserver)
+add_subdirectory(src)
 if(HTSERVER_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
