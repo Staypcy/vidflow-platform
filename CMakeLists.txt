@@ -28,10 +28,10 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInf
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 add_subdirectory(src)
-if(HTSERVER_BUILD_TESTS)
+if(VIDFLOW_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
-if(HTSERVER_BUILD_TOOLS)
+if(VIDFLOW_BUILD_TOOLS)
     add_subdirectory(tools)
 endif()

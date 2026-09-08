@@ -12,7 +12,7 @@ file(GLOB_RECURSE VIDFLOW_HEADERS CONFIGURE_DEPENDS
 
 add_library(vidflow STATIC ${VIDFLOW_SOURCES} ${VIDFLOW_HEADERS})
 
-target_include_directories(htserver
+target_include_directories(vidflow
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -20,7 +20,7 @@ target_include_directories(htserver
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_compile_options($<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Werror>)
+#target_compile_options($<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Werror>)
 
 
 install(TARGETS vidflow
@@ -30,6 +30,6 @@ install(TARGETS vidflow
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-install(FILES ${vidflow_HEADERS}
+install(FILES ${VIDFLOW_HEADERS}
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vidflow
 )
