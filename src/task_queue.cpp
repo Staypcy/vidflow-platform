@@ -32,3 +32,54 @@ void TaskQueue::push(Task t)
     Task copy=t;
     m_impl->pool.enqueue([this,copy]{run(copy);});
 }
+
+void TaskQueue::run(Task t){
+    fs::path workDir = fs::temp_directory_path() / "vidflow" / t.id;
+    std::error_code ec;
+    fs::create_directories(workDir, ec);
+
+    std::string err;
+
+    // Step 1: 下载视频
+    std::string video = (workDir / "video.mp4").string();
+    if (!downloadFile(t.url, video, err)) {
+        m_impl->db->updateStatus(t.id, Status::FAILED, "download failed: " + err);
+        fs::remove_all(workDir, ec);
+        return;
+    }
+
+    // Step 2: ffmpeg 抽帧
+    std::string framesDir = (workDir / "frames").string();
+    if (extractFrames(video, framesDir, err) != 0) {
+        m_impl->db->updateStatus(t.id, Status::FAILED, "ffmpeg failed: " + err);
+        fs::remove_all(workDir, ec);
+        return;
+    }
+
+    std::vector<std::string> frames;
+    for (const auto& entry : fs::directory_iterator(framesDir))
+        if (entry.path().extension() == ".jpg")
+            frames.push_back(entry.path().string());
+    std::sort(frames.begin(), frames.end());
+
+    if (frames.empty()) {
+        m_impl->db->updateStatus(t.id, Status::FAILED, "these are no frames.maybe vedio is bad.");
+        fs::remove_all(workDir, ec);
+        return;
+    }
+
+    // Step 3: 并发调用多模态
+    std::vector<FrameResult>results=analyzeFrames(frames,m_impl->cfg);
+
+
+    json report=json::array();
+    for(const auto& r:results){
+        report.push_back({
+            {"frame", r.frame},
+            {"analysis", r.analysis}
+        });
+    }
+    m_impl->db->setReport(t.id,report.dump());
+
+    fs::remove_all(workDir,ec);
+}
